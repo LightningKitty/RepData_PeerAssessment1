@@ -36,8 +36,8 @@ directory. We checked three things:
 
 Then we read the data from the CSV file into a R data frame, *moveData*. 
 
-```{r}
 
+```r
 zipDataFile <- "activity.zip"
 fileName <- "activity.csv"
 
@@ -55,7 +55,6 @@ if (!file.exists(fileName))
 
 ## Read the data
 moveData <- read.csv(fileName, stringsAsFactors=FALSE)
-            
 ```
 
 We needed to do some basic processing:
@@ -66,7 +65,8 @@ recorded as a decimal (e.g. 8.45am = 8.75). This is to ensure that when plotting
 time on the x-axis, it will scale properly.
 
 
-```{r}
+
+```r
 library(lubridate)
 suppressMessages(library(dplyr))
 
@@ -84,25 +84,27 @@ moveData <- mutate(moveData,
 First, we grouped and summarized the data using *dplyr* to find the total number of
 steps per day. Then we made a histogram for the total number of steps per day.
 
-```{r}
 
+```r
 moveData <- group_by(moveData, date)
 plotData <- summarize(moveData, Total = sum(steps)) ## na.rm is TRUE by default
 hist(plotData$Total, main="Histogram of total steps taken per day", 
      xlab="Total steps taken per day", ylim = c(0,30), col = "pink")
 ```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+
 Then we calculated the mean and median for the total number of steps per day.
 
-```{r}
+
+```r
 ## as.character used to round off without using scientific notation
 meanSteps <- as.character(round(mean(plotData$Total, na.rm=TRUE), 2))
 medianSteps <- median(plotData$Total, na.rm=TRUE)
-
 ```
 
-The mean number of steps per day is `r meanSteps` and the median number of steps
-per day is `r medianSteps`.
+The mean number of steps per day is 10766.19 and the median number of steps
+per day is 10765.
 
 ## What is the average daily activity pattern?
 
@@ -111,7 +113,8 @@ the dataset by the 5 minute interval of the day (in decimal form).
 
 Then we summarized it and plotted it. 
 
-```{r}
+
+```r
 moveData <- group_by(moveData, decTime)
 meanData <- summarize(moveData, average=mean(steps, na.rm=TRUE))
 
@@ -122,12 +125,14 @@ g <- ggplot(data=meanData, aes(x=decTime, y=average)) + geom_line() +
     scale_x_continuous(breaks=seq(0,24,2))
 
 print(g)
-
 ```
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
 
 We found the highest number of average steps by looking for the highest number in *meanData$average*. Then we looked up the matching interval.
 
-```{r}
+
+```r
 ## Find the highest average number of steps 
 maxAverage <- max(meanData$average)
 
@@ -140,11 +145,10 @@ hours <- as.integer(maxInterval)
 minutes <- (maxInterval - hours)*60
 maxInterval <- paste(hours,":",minutes, sep="")
 maxAverage <- as.character(round(maxAverage, 2))
-
 ```
 
 The 5 minute interval with the maximum number of average steps ended at 
-`r maxInterval` (24 hour time), during which an average of `r maxAverage` steps 
+8:35 (24 hour time), during which an average of 206.17 steps 
 was taken.
 
 ## Imputing missing values
@@ -157,13 +161,14 @@ First, we calculated and reported the total number of missing values in the data
 columns specify the date and time of the recording, we only needed to check the 
 *steps* column.
 
-```{r}
+
+```r
 total <- sum(is.na(moveData$steps))
 totalObs <- nrow(moveData)
 ```
 
-The total number of missing values in the dataset was `r total` out of 
-`r totalObs` observations.
+The total number of missing values in the dataset was 2304 out of 
+17568 observations.
 
 Second, we devised a strategy for filling in all of the missing values. We 
 decided to use the mean for that 5-minute interval because this would create
@@ -177,7 +182,8 @@ The function *replaceNAsInterval* returns a filled in dataset when given the
 dataset *data* with missing values, and a dataset *subvals* with the mean
 number of steps for each interval (in decimal form).
 
-```{r}
+
+```r
 replaceNAsInterval <- function(data, subvals) {
     for (i in 1:nrow(data)) {
         ## If it's NA
@@ -198,19 +204,20 @@ replaceNAsInterval <- function(data, subvals) {
 
 ## Replace the NAs in moveData and store the completed set in completeData
 completeData <- replaceNAsInterval(moveData, meanData)
-
-
 ```
 
 Fourth, we grouped and summarized the data to find the total number of steps per 
 day. Then we made a histogram for the total number of steps per day.
 
-```{r}
+
+```r
 completeData <- group_by(completeData, date)
 plotCompleteData <- summarize(completeData, Total = sum(as.numeric(steps)))
 hist(plotCompleteData$Total, main="Histogram of total steps taken per day", 
      xlab="Total steps taken per day", ylim = c(0,40), col = "blue")
 ```
+
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
 
 As can be seen, the result is that without missing values, some categories are 
 higher than the estimates because all intervals on all 61 days have values. F
@@ -220,9 +227,77 @@ are missing for whole days (e.g. 1 October), or only for certain intervals
 within some days. We worked this out by checking which dates have NAs, and how
 many.
 
-```{r}
+
+```r
 moveData <- group_by(moveData, date)
 summarize(moveData, sum(is.na(steps)))
+```
+
+```
+## Source: local data frame [61 x 2]
+## 
+##          date sum(is.na(steps))
+## 1  2012-10-01               288
+## 2  2012-10-02                 0
+## 3  2012-10-03                 0
+## 4  2012-10-04                 0
+## 5  2012-10-05                 0
+## 6  2012-10-06                 0
+## 7  2012-10-07                 0
+## 8  2012-10-08               288
+## 9  2012-10-09                 0
+## 10 2012-10-10                 0
+## 11 2012-10-11                 0
+## 12 2012-10-12                 0
+## 13 2012-10-13                 0
+## 14 2012-10-14                 0
+## 15 2012-10-15                 0
+## 16 2012-10-16                 0
+## 17 2012-10-17                 0
+## 18 2012-10-18                 0
+## 19 2012-10-19                 0
+## 20 2012-10-20                 0
+## 21 2012-10-21                 0
+## 22 2012-10-22                 0
+## 23 2012-10-23                 0
+## 24 2012-10-24                 0
+## 25 2012-10-25                 0
+## 26 2012-10-26                 0
+## 27 2012-10-27                 0
+## 28 2012-10-28                 0
+## 29 2012-10-29                 0
+## 30 2012-10-30                 0
+## 31 2012-10-31                 0
+## 32 2012-11-01               288
+## 33 2012-11-02                 0
+## 34 2012-11-03                 0
+## 35 2012-11-04               288
+## 36 2012-11-05                 0
+## 37 2012-11-06                 0
+## 38 2012-11-07                 0
+## 39 2012-11-08                 0
+## 40 2012-11-09               288
+## 41 2012-11-10               288
+## 42 2012-11-11                 0
+## 43 2012-11-12                 0
+## 44 2012-11-13                 0
+## 45 2012-11-14               288
+## 46 2012-11-15                 0
+## 47 2012-11-16                 0
+## 48 2012-11-17                 0
+## 49 2012-11-18                 0
+## 50 2012-11-19                 0
+## 51 2012-11-20                 0
+## 52 2012-11-21                 0
+## 53 2012-11-22                 0
+## 54 2012-11-23                 0
+## 55 2012-11-24                 0
+## 56 2012-11-25                 0
+## 57 2012-11-26                 0
+## 58 2012-11-27                 0
+## 59 2012-11-28                 0
+## 60 2012-11-29                 0
+## 61 2012-11-30               288
 ```
 
 This showed us that there were 8 days where no measurements were taken. As a 
@@ -230,21 +305,20 @@ result, on those days, our strategy for filling in the data set would give us a
 total number of steps equal to the sum of the mean values for each interval. It
 would not increase the total number of steps for any day that we had already
 included in the first histogram. Therefore, since we know that the mean was
-`r meanSteps`, the number of days on which the participant took 10000-15000 
+10766.19, the number of days on which the participant took 10000-15000 
 steps would have increased by 8 days. The other days would have remained the 
 same as the estimates.
 
 Again we calculated the mean and median for the total number of steps per day.
 
-```{r}
+
+```r
 meanSteps <- as.character(round(mean(plotCompleteData$Total, na.rm=TRUE), 2))
 medianSteps <- as.character(round(median(plotCompleteData$Total, na.rm=TRUE),2))
-
-
 ```
 
-The mean number of steps per day is `r meanSteps` and the median number of steps
-per day is `r medianSteps`.
+The mean number of steps per day is 10766.19 and the median number of steps
+per day is 10766.19.
 
 The number of days on which all values were missing has actually changed the 
 median to the mean!
@@ -255,19 +329,20 @@ The first thing we did was to determine which days are weekdays and which
 days are on weekends. Then we created a new factor variable *daytype* to 
 indicate whether a given day is a weekday or a weekend day.
 
-```{r}
+
+```r
 ## Add the days of the week to the table
 completeData <- mutate(completeData, weekday=weekdays(date))
 completeData$daytype <- as.factor(ifelse(
                             completeData$weekday %in% c("Saturday", "Sunday"), 
                             "weekend", "weekday")) 
-
 ```
 
 Then we grouped the data and summarized to get a dataset with the average number
 of steps for each 5 minute interval on weekdays and on weekends.
 
-```{r}
+
+```r
 completeData <- group_by(completeData, daytype,decTime)
 splitData <- summarize(completeData, average=mean(steps))
 
@@ -278,6 +353,8 @@ g <- ggplot(splitData, aes(x=decTime, y=average)) + geom_line() +
 
 print(g)
 ```
+
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png) 
  In both cases, there is very little movement between 10pm and 6 pm. This is logical since most people would be asleep.
  
  On weekdays, we see that there is early activity from 6 am, then a distinct spike of activity between 8-9 am, and a smaller spike between 6-7 pm. There are small spikes around 12 pm and just before 4 pm, which may reflect lunch and getting a coffee. This makes sense in the context of a work day.
