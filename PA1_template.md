@@ -220,7 +220,7 @@ hist(plotCompleteData$Total, main="Histogram of total steps taken per day",
 ![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
 
 As can be seen, the result is that without missing values, some categories are 
-higher than the estimates because all intervals on all 61 days have values. F
+higher than the estimates because all intervals on all 61 days have values.
 
 The effect on the total number of steps for each day depends on whether values
 are missing for whole days (e.g. 1 October), or only for certain intervals 
@@ -325,9 +325,9 @@ median to the mean!
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-The first thing we did was to determine which days are weekdays and which 
-days are on weekends. Then we created a new factor variable *daytype* to 
-indicate whether a given day is a weekday or a weekend day.
+The first thing we did was to work out the day of the week for every date. Then 
+we created a new factor variable *daytype* to indicate whether a given day is a 
+weekday or a weekend day.
 
 
 ```r
@@ -355,7 +355,8 @@ print(g)
 ```
 
 ![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png) 
- In both cases, there is very little movement between 10pm and 6 pm. This is logical since most people would be asleep.
+
+In both cases, there is very little movement between 10pm and 6 pm. This is logical since most people would be asleep.
  
  On weekdays, we see that there is early activity from 6 am, then a distinct spike of activity between 8-9 am, and a smaller spike between 6-7 pm. There are small spikes around 12 pm and just before 4 pm, which may reflect lunch and getting a coffee. This makes sense in the context of a work day.
 
